@@ -10,63 +10,33 @@ module Utilities
 		to_float(year_percent(a)) + '%'
 	end
 
-	def convert(x)
+	def convert_to_military_time(x)
 		a, b = x.split(":")
 		c, d = b.split(" ")
-		e = ""
 
-		if d.downcase != 'am'
-			if a.to_i == 12
-				e = a + ":" + c
-			else
-				e = (a.to_i + 12).to_s + ":" + c
-			end
-		elsif d.downcase != 'pm'
-			if a.to_i == 12
-				e = (a.to_i - 12).to_s + ":" + c
-			else
-				e = a + ":" + c
-			end
+		if d.downcase == 'pm'
+			e = (a.to_i == 12 ? a + ':' + c : (a.to_i + 12).to_s + ':' + c)
+		elsif d.downcase == 'am'
+			e = (a.to_i == 12 ? e = (a.to_i - 12).to_s + ":" + c : e = a + ":" + c)
 		end
-
-		return e
 	end
 
-	def convert2(x)
+	def convert_to_standard_time(x)
 		a, b = x.split(":")
-		c = ""
-
-		if a.to_i < 12
-			c = a + b + " am"
-		else
-			c = a + b + " pm"
-		end
-
-		return c
+		c = (a.to_i == 12 ? a + ':' + b + "PM" : (a.to_i < 12 ? a + ':' + b + " AM" : (a.to_i - 12).to_s + ':' + b + " PM"))
 	end
 
-	def okay(a, b)
-		c = false
-		if (a.split(":")[0].to_i >= 8 && b || a.split(":")[0].to_i >= 10 && !b) && a.split(":")[1].split(" ")[1] == 'pm'
-			c = false
-		else
-			c = true
-		end
-		return c
+	def bedtime?(time, bool)
+		hours = time.split(":")[0].to_i
+		am_or_pm = time.split(":")[1].split(" ")[1]
+
+		(hours >= 8 && bool || hours >= 10 && !bool) && am_or_pm == 'PM' ? false : true
 	end
 
-	def span(a, b)
-		c = 0
-		d = 0
-		if a < b
-			c = b
-			d = a
-		else
-			c = a
-			d = b
-		end
-
-		return ('%.1f' % (amount(c)[0..-2].to_f - amount(d)[0..-2].to_f)).to_s + '%'
+	def difference_in_percentages(num_secs1, num_secs2)
+		year_percent1 = percent_of_year(num_secs1)[0..-2].to_f
+		year_percent2 = percent_of_year(num_secs2)[0..-2].to_f
+		num_secs1 < num_secs2 ? total_percent(year_percent2,year_percent1) : total_percent(year_percent1, year_percent2)
 	end
 	private
 		def is_divisible_by?(int, dividend)
@@ -77,5 +47,8 @@ module Utilities
 		end
 		def year_percent(a)
 			(a / SECONDS_IN_A_YEAR) * 100
+		end
+		def total_percent(percent1, percent2)
+			('%.1f' % (percent1 - percent2)).to_s + '%'
 		end
 end
